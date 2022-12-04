@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}
+  Записи сообщества{{ group.title }}
+{% endblock %}
+{% block content %}
+  <h1>
+    {{group.title}}
+  </h1>
+  <p>
+    {{group.description|linebreaks }}
+  </p>
+  {% for post in page_obj %}
+    {% include "posts/includes/author_post.html" with link_group=False %}
+  {% endfor %}
+  <div class="d-flex justify-content-center">
+    {% include "posts/includes/paginator.html" %}
+  </div>
+{% endblock %}
