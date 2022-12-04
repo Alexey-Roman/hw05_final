@@ -138,3 +138,8 @@ class UrlAbsPathTests(TestCase):
         for name, url in name_url:
             with self.subTest(name=name, url=url):
                 self.assertEqual(url, name)
+
+    def test_url_404_get_custom_pages(self):
+        """Проверка, что страница 404 отдаёт кастомный шаблон"""
+        response = self.client.get('/defunct/page/')
+        self.assertTemplateUsed(response, 'core/404.html')

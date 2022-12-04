@@ -15,6 +15,7 @@ def get_paginator(post_list, page_number):
     paginator = Paginator(post_list, settings.NUMBER_POSTS)
     return paginator.get_page(page_number)
 
+
 @cache_page(20)
 def index(request):
     page_obj = get_paginator(
@@ -49,8 +50,7 @@ def profile(request, username):
         request.GET.get('page'),
     )
     if (request.user.is_authenticated
-                 and request.user.follower.filter(author=author).exists()
-                 ):
+            and request.user.follower.filter(author=author).exists()):
         following = True
     else:
         following = False
@@ -83,7 +83,7 @@ def post_detail(request, post_id):
 @login_required
 def post_create(request):
     form = PostForm(request.POST or None,
-                    files=request.FILES or None,)
+                    files=request.FILES or None, )
     if form.is_valid():
         create_post = form.save(commit=False)
         create_post.author = request.user
@@ -108,7 +108,7 @@ def post_edit(request, post_id):
         return redirect('posts:post_detail', post_id)
     form = PostForm(request.POST or None,
                     files=request.FILES or None,
-                    instance=edit_post,)
+                    instance=edit_post, )
 
     if form.is_valid():
         form.save()
@@ -120,6 +120,7 @@ def post_edit(request, post_id):
         'is_edit': True,
     }
     return render(request, template, context)
+
 
 @login_required
 def add_comment(request, post_id):
