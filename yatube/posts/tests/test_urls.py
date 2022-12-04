@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
+from django.core.cache import cache
 from django.urls import reverse
 
 from ..models import Group, Post
@@ -29,6 +30,7 @@ class UrlAbsPathTests(TestCase):
         )
 
     def setUp(self):
+        cache.clear()
         self.guest_client = Client()
         self.authorized_author = Client()
         self.authorized_author.force_login(self.user_post)

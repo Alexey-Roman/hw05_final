@@ -30,7 +30,7 @@ class PostPagesTests(TestCase):
             description='Описание для тестовой группы без поста',
             slug='slug-no-post'
         )
-        small_gif = (
+        cls.small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
@@ -38,9 +38,9 @@ class PostPagesTests(TestCase):
             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
             b'\x0A\x00\x3B'
         )
-        uploaded = SimpleUploadedFile(
+        cls.uploaded = SimpleUploadedFile(
             name='small.gif',
-            content=small_gif,
+            content=cls.small_gif,
             content_type='image/gif',
         )
 
@@ -48,12 +48,13 @@ class PostPagesTests(TestCase):
             text='Тестовый текст поста',
             author=cls.user,
             group=cls.group,
-            image=uploaded,
+            image=cls.uploaded,
         )
 
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache.clear()
 
     def test_pages_show_correct_context(self):
         """Проверка, что *.html шаблон выдаёт верный контекст в шаблон."""
@@ -69,6 +70,7 @@ class PostPagesTests(TestCase):
         )
 
         for url, objects in templates_context:
+            print(url)
             response = self.authorized_client.get(url)
             if objects == 'page_obj':
                 post_contex = response.context.get(objects).object_list[0]
@@ -76,6 +78,7 @@ class PostPagesTests(TestCase):
                 post_contex = response.context['post']
 
             with self.subTest(post_contex=post_contex):
+
                 self.assertEqual(post_contex.text, self.post.text)
                 self.assertEqual(post_contex.author, self.post.author)
                 self.assertEqual(post_contex.group.id, self.post.group.id)
