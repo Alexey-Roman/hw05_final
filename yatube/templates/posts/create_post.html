@@ -32,7 +32,13 @@
                 </div>
               {% endfor %}
           {% endif %}
-          <form method="post" action="{% url 'posts:create' %}" enctype="multipart/form-data">
+          {% if is_edit %}
+            <form method="post" action="{% url 'posts:edit' post_id %}"
+                  enctype="multipart/form-data">
+          {% else %}
+            <form method="post" action="{% url 'posts:create' %}"
+                  enctype="multipart/form-data">
+          {% endif %}
             {% csrf_token %}
               {% load user_filters %}
               {% for field in form %}
@@ -62,7 +68,7 @@
                   {% endif %}
                 </button>
               </div>
-          </form>
+            </form>
         </div>
       </div>
     </div>

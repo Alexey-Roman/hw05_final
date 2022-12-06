@@ -69,7 +69,6 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    TEXT_LIMIT = 15
 
     post = models.ForeignKey(
         Post,
@@ -97,7 +96,7 @@ class Comment(models.Model):
         verbose_name = 'Комментарий'
 
     def __str__(self):
-        return self.text[:self.TEXT_LIMIT]
+        return self.text
 
 
 class Follow(models.Model):

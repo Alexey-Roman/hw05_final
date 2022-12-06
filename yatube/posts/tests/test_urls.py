@@ -53,6 +53,8 @@ class UrlAbsPathTests(TestCase):
              self.authorized_author, HTTPStatus.OK),
             ('/unexisting_page/',
              self.client, HTTPStatus.NOT_FOUND),
+            (reverse('posts:follow_index'),
+             self.authorized_author, HTTPStatus.OK),
         ]
         for url, user, status in url_user_status:
             with self.subTest(url=url):
@@ -92,6 +94,7 @@ class UrlAbsPathTests(TestCase):
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
+
         templates_url_names = [
             (reverse('posts:index'),
              'posts/index.html'),
@@ -105,6 +108,10 @@ class UrlAbsPathTests(TestCase):
              'posts/create_post.html'),
             (reverse('posts:create'),
              'posts/create_post.html'),
+            (reverse('posts:follow_index'),
+             'posts/follow.html'),
+            ('/defunct/page/', 'core/404.html'),
+
         ]
         for address, template in templates_url_names:
             with self.subTest(adress=address):
@@ -135,13 +142,10 @@ class UrlAbsPathTests(TestCase):
              f'/posts/{self.post.id}/edit/'),
             (reverse(
                 'posts:create'), '/create/'),
+            (reverse(
+                'posts:follow_index'), '/follow/'),
         ]
 
         for name, url in name_url:
             with self.subTest(name=name, url=url):
                 self.assertEqual(url, name)
-
-    def test_url_404_get_custom_pages(self):
-        """Проверка, что страница 404 отдаёт кастомный шаблон"""
-        response = self.client.get('/defunct/page/')
-        self.assertTemplateUsed(response, 'core/404.html')
