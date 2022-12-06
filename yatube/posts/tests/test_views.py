@@ -196,9 +196,9 @@ class FollowTest(TestCase):
     def test_follow_on_authors(self):
         """Проверка записей у тех кто подписан."""
 
-        post = Post.objects.create(
-            author=self.author,
-            text="Проверка записей подписки")
+        # post = Post.objects.create(
+        #     author=self.author,
+        #     text="Проверка записей подписки")
         Follow.objects.create(
             user=self.follower,
             author=self.author)
