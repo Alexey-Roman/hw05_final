@@ -20,6 +20,7 @@ class PostPagesTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='VladimirMayakovsky')
+        cls.follower = User.objects.create(username='Plato')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='test-slug',
@@ -59,6 +60,11 @@ class PostPagesTests(TestCase):
     def test_pages_show_correct_context(self):
         """Проверка, что *.html шаблон выдаёт верный контекст в шаблон."""
 
+        self.authorized_client.force_login(self.follower)
+        Follow.objects.create(
+            user=self.follower,
+            author=self.user
+        )
         templates_context = (
             (reverse('posts:index'), 'page_obj'),
             (reverse('posts:group_list',
@@ -67,6 +73,8 @@ class PostPagesTests(TestCase):
                      kwargs={'username': self.user.username}), 'page_obj'),
             (reverse('posts:post_detail',
                      kwargs={'post_id': self.post.id}), 'post'),
+            (reverse('posts:follow_index'), 'page_obj'),
+
         )
 
         for url, objects in templates_context:
@@ -77,7 +85,6 @@ class PostPagesTests(TestCase):
                 post_contex = response.context['post']
 
             with self.subTest(post_contex=post_contex):
-
                 self.assertEqual(post_contex.text, self.post.text)
                 self.assertEqual(post_contex.author, self.post.author)
                 self.assertEqual(post_contex.group.id, self.post.group.id)
@@ -155,21 +162,19 @@ class FollowTest(TestCase):
         cls.follower = User.objects.create(username='Plato')
 
         cls.post = Post.objects.create(
-            text='Пост Автора',
+            text='Подпишись на меня',
             author=cls.author,
         )
 
     def setUp(self):
         self.author_client = Client()
         self.author_client.force_login(self.author)
-        self.follower_client = Client()
-        self.follower_client.force_login(self.follower)
 
     def test_follow_on_user(self):
         """Подписка на других пользователей"""
 
-        Post.objects.all().delete()
-        self.follower_client.post(
+        self.author_client.force_login(self.follower)
+        self.author_client.post(
             reverse(
                 'posts:profile_follow',
                 kwargs={'username': self.author})
@@ -182,51 +187,28 @@ class FollowTest(TestCase):
     def test_unfollow_on_user(self):
         """Проверка отписки от пользователя."""
 
-        Post.objects.all().delete()
+        self.author_client.force_login(self.follower)
         Follow.objects.create(
             user=self.follower,
             author=self.author,
         )
-        self.follower_client.post(
+        self.author_client.post(
             reverse(
                 'posts:profile_unfollow',
-                kwargs={'username': self.follower}))
+                kwargs={'username': self.author})
+        )
         self.assertEqual(Follow.objects.count(), 0)
-
-    def test_follow_on_authors(self):
-        """Проверка записей у тех кто подписан."""
-
-        # post = Post.objects.create(
-        #     author=self.author,
-        #     text="Проверка записей подписки")
-        Follow.objects.create(
+        self.assertFalse(Follow.objects.filter(
             user=self.follower,
-            author=self.author)
-        response_foll = self.author_client.get(
-            reverse('posts:follow_index'))
-        response_post = self.author_client.get(
-            reverse('posts:index'))
-        pos = response_post.context['page_obj'].object_list
-        foll = response_foll.context['page_obj'].object_list
-        print()
-        print(f"{pos} >>> {type(pos)}")
-        print(f'{foll} >>> {type(foll)}')
-        # self.assertIn(post, response.context['page_obj'])
+            author=self.author,)
+        )
 
-    # post_contex = response.context.get(objects).object_list[0]
     def test_notfollow_on_authors(self):
         """Проверка записей у тех кто не подписан."""
 
         post = Post.objects.create(
             author=self.author,
-            text="Проверка записей подписки")
+            text="Подпишись на меня")
         response = self.author_client.get(
             reverse('posts:follow_index'))
-
-        pos = post
-        foll = response.context['page_obj'].object_list
-        print()
-        print(f"{pos} >>> {type(pos)}")
-        print(f'{foll} >>> {type(foll)}')
-
-        # self.assertNotIn(post, response.context['page_obj'].object_list)
+        self.assertNotIn(post, response.context['page_obj'].object_list)

@@ -24,8 +24,6 @@ def index(request):
     context = {
         'page_obj': page_obj,
     }
-    # print(page_obj)
-    # print(type(page_obj))
     return render(request, template, context)
 
 
@@ -132,11 +130,11 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     page_obj = get_paginator(
-        Post.objects.filter(author__following__user=request.user),
+        Post.objects.filter(
+            author__following__user=request.user
+        ).select_related('author', 'group'),
         request.GET.get('page'),
     )
-    # print(page_obj)
-    # print(type(page_obj))
     template = 'posts/follow.html'
     context = {
         'page_obj': page_obj,
@@ -154,5 +152,9 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    Follow.objects.filter(user=request.user).first().delete()
+    get_object_or_404(
+        Follow,
+        user=request.user,
+        author__username=username
+    ).delete()
     return redirect('posts:profile', username)
