@@ -200,7 +200,7 @@ class FollowTest(TestCase):
         self.assertEqual(Follow.objects.count(), 0)
         self.assertFalse(Follow.objects.filter(
             user=self.follower,
-            author=self.author,)
+            author=self.author,).exists()
         )
 
     def test_notfollow_on_authors(self):

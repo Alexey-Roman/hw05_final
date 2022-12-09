@@ -110,7 +110,6 @@ def post_edit(request, post_id):
     context = {
         'form': form,
         'is_edit': True,
-        'post_id': post_id
     }
     return render(request, template, context)
 
@@ -152,9 +151,8 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    get_object_or_404(
-        Follow,
-        user=request.user,
-        author__username=username
-    ).delete()
+    author = get_object_or_404(User, username=username)
+    is_follower = Follow.objects.filter(user=request.user, author=author)
+    if is_follower.exists():
+        is_follower.delete()
     return redirect('posts:profile', username)

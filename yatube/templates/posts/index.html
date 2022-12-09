@@ -3,8 +3,8 @@
 {% block content %}
   {% load cache %}
   {% include 'posts/includes/switcher.html' with index=True %}
-  {% cache 20 index_page %}
-  {% for post in page_obj %}
+  {% cache 20 post page_obj %}
+  {% for post in page_obj  %}
     {% include "posts/includes/author_post.html" %}
   {% endfor %}
   {% endcache %}
